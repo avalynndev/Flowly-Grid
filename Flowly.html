@@ -10,6 +10,12 @@
 
 <canvas id="bg-canvas"></canvas>
 
+<!-- Top right control buttons -->
+<div class="top-controls">
+  <button id="settings-btn" class="icon-btn" title="Settings" aria-label="Settings">⚙️</button>
+  <button id="darkmode-btn" class="icon-btn" title="Dark Mode" aria-label="Dark Mode">🌙</button>
+</div>
+
 <div class="main-content">
   <div class="top-tools" aria-label="Productivity tools">
     <button class="tool-btn" title="Habits" aria-label="Habits Tool">✅</button>
@@ -31,7 +37,6 @@
 const canvas = document.getElementById('bg-canvas');
 const ctx = canvas.getContext('2d');
 
-// Resize canvas to always fill the screen
 function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -39,12 +44,11 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
-// Mouse coordinates
+const gridSize = 40;
 let mouseX = -1000;
 let mouseY = -1000;
 
-// Listen on window so grid reacts everywhere
-window.addEventListener('mousemove', (e) => {
+window.addEventListener('mousemove', e => {
   mouseX = e.clientX;
   mouseY = e.clientY;
 });
@@ -53,10 +57,18 @@ window.addEventListener('mouseleave', () => {
   mouseY = -1000;
 });
 
-const gridSize = 40;
+function getColors() {
+  if(document.body.classList.contains('darkmode')) {
+    return {bg: "#212833", grid: "rgba(180,191,220,ALPHA)", gridBlob: "rgba(90,153,255,ALPHA)"};
+  } else {
+    return {bg: "#eef2f3", grid: "rgba(42,69,120,ALPHA)", gridBlob: "rgba(90,153,255,ALPHA)"};
+  }
+}
 
 function drawGrid() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const colors = getColors();
+  ctx.fillStyle = colors.bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   for(let y = 0; y < canvas.height; y += gridSize) {
     for(let x = 0; x < canvas.width; x += gridSize) {
@@ -68,9 +80,11 @@ function drawGrid() {
       let alpha = 0.15;
       if (dist < maxRadius) {
         alpha = 0.15 + (1 - dist / maxRadius) * 0.7;
+        ctx.strokeStyle = colors.gridBlob.replace('ALPHA', alpha);
+      } else {
+        ctx.strokeStyle = colors.grid.replace('ALPHA', alpha);
       }
 
-      ctx.strokeStyle = `rgba(42, 69, 120, ${alpha})`;
       ctx.lineWidth = 1.8;
       ctx.strokeRect(x, y, gridSize, gridSize);
     }
@@ -83,7 +97,18 @@ function animate() {
 }
 animate();
 
-// Other functionality
+const darkBtn = document.getElementById('darkmode-btn');
+
+darkBtn.addEventListener('click', () => {
+  const isDark = document.body.classList.toggle('darkmode');
+  
+  // Rising animation
+  darkBtn.classList.add('rise');
+  setTimeout(() => darkBtn.classList.remove('rise'), 300);
+
+  darkBtn.textContent = isDark ? '☀️' : '🌙';
+});
+
 const dateDisplay = document.getElementById('dateDisplay');
 const clockDisplay = document.getElementById('clock');
 const ampmDisplay = document.getElementById('ampm');
@@ -118,7 +143,7 @@ function updateTime() {
 
   let hour = now.getHours();
   let ampm = hour >= 12 ? 'PM' : 'AM';
-  hour = hour % 12;
+  hour %= 12;
   hour = hour ? hour : 12;
   let minute = now.getMinutes().toString().padStart(2, '0');
   let second = now.getSeconds().toString().padStart(2, '0');
