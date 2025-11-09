@@ -1,160 +1,636 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Productivity Hub with Interactive Grid</title>
-<link rel="stylesheet" href="Flowly.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flowly</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #fff;
+      color: #111;
+      transition: background 0.3s, color 0.3s;
+      overflow: hidden;
+    }
+    body.dark {
+      background: #11131a;
+      color: #00e0fc;
+    }
+    #grid-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      pointer-events: none;
+    }
+    #sidebar {
+      position: fixed;
+      z-index: 10;
+      left: 0; top: 0;
+      width: 260px;
+      height: 100vh;
+      background: #fff;
+      box-shadow: 2px 0 16px rgba(0,0,0,0.07);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 20px 24px;
+      transition: background 0.3s, color 0.3s;
+      overflow-y: auto;
+    }
+    body.dark #sidebar {
+      background: #1b1c22;
+      color: #00e0fc;
+      box-shadow: 2px 0 22px #000a;
+    }
+    #sidebar h1 {
+      color: #111;
+      font-size: 30px;
+      font-weight: 900;
+      margin-bottom: 42px;
+      letter-spacing: 0.5px;
+      user-select: none;
+    }
+    body.dark #sidebar h1 {
+      color: #00e0fc;
+    }
+    .section-title {
+      align-self: start;
+      margin-left: 15px;
+      margin-bottom: 12px;
+      font-weight: 700;
+      font-size: 15px;
+      color: #2773d1;
+      letter-spacing: 0.4px;
+      user-select: none;
+    }
+    body.dark .section-title {
+      color: #00e0fc;
+    }
+    .tool-button {
+      width: 94%;
+      min-height: 44px;
+      border-radius: 13px;
+      border: 2.2px solid transparent;
+      font-size: 1.17rem;
+      font-weight: 700;
+      color: #151e28;
+      background: #f3f8ff;
+      cursor: pointer;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      user-select: none;
+      gap: 14px;
+      padding: 9px 14px 11px 14px;
+      transition: background 0.3s, color 0.3s, border 0.3s, box-shadow 0.3s;
+    }
+    .tool-button:hover {
+      background:#8acdfa;
+      color: #0055e9;
+      border-color: #0085ff;
+      box-shadow: 0 5px 14px #41b2ff40;
+    }
+    body.dark .tool-button {
+      color: #00e0fc;
+      background: #161a23;
+    }
+    body.dark .tool-button:hover {
+      background: #003349;
+      color: #00e0fc;
+      border-color: #00e0fc;
+      box-shadow: 0 5px 17px #00e0fc50;
+    }
+    .tool-logo {
+      width: 28px;
+      height: 28px;
+      stroke-width: 2;
+      stroke: currentColor;
+      fill: none;
+      flex-shrink: 0;
+      display: inline-block;
+    }
+    #center-content {
+      margin-left: 260px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      z-index: 2;
+      position: relative;
+      user-select: none;
+    }
+    #clock-container {
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      margin-bottom: 16px;
+    }
+    #clock {
+      font-weight: 900;
+      font-size: 4.3rem;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      color: #0050bc;
+      user-select: none;
+      letter-spacing: 2px;
+    }
+    body.dark #clock {
+      color: #00e0fc;
+      text-shadow: 0 0 16px #00e0fc88;
+    }
+    #ampm {
+      font-weight: 700;
+      font-size: 1.7rem;
+      letter-spacing: 1.5px;
+      padding-left: 9px;
+      color: #2287fa;
+      user-select: none;
+    }
+    body.dark #ampm {
+      color: #00e0fc;
+      text-shadow: 0 0 6px #00e0fc80;
+    }
+    #quote {
+      font-style: italic;
+      font-weight: 700;
+      font-size: 1.15rem;
+      max-width: 520px;
+      margin-top: 16px;
+      padding: 22px 18px;
+      border-radius: 14px;
+      background: #f3f8ff;
+      color: #1855a6;
+      box-shadow: 0 0 16px #a9dfff40;
+    }
+    body.dark #quote {
+      background: #161a23;
+      color: #00e0fc;
+      box-shadow: 0 0 19px #00e0fc33;
+    }
+    #music-player-fixed {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #f3f8ff;
+      border-radius: 14px;
+      box-shadow: 0 7px 18px #2773d140;
+      display: flex;
+      align-items: center;
+      padding: 13px 20px;
+      gap: 14px;
+      width: 320px;
+      z-index: 1000;
+      user-select: none;
+      transition: background 0.3s, color 0.3s;
+    }
+    body.dark #music-player-fixed {
+      background: #111827;
+      box-shadow: 0 7px 20px #00e0fc44;
+      color: #00e0fc;
+    }
+    #music-player-fixed img {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      object-fit: cover;
+      margin-right: 6px;
+      box-shadow: 0 3px 13px #7a8cbe34;
+    }
+    #music-player-fixed .music-info {
+      flex-grow: 1;
+      font-weight: 700;
+      font-size: 1.08rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #music-player-fixed .music-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    #music-player-fixed button.music-button {
+      width: 38px;
+      height: 38px;
+      font-size: 20px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      color: #0050bc;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, color 0.2s;
+    }
+    #music-player-fixed button.music-button:hover {
+      background: #8acdfa20;
+      color: #00e0fc;
+    }
+    body.dark #music-player-fixed button.music-button {
+      color: #00e0fc;
+    }
+    body.dark #music-player-fixed button.music-button:hover {
+      background: #00e0fc33;
+      color: #fff;
+    }
+    /* Modal */
+    #tool-modal-bg {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.52);
+      z-index: 2000;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #tool-modal-bg.active { display: block; opacity: 1;}
+    #tool-modal {
+      display: none;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%) scale(0.8);
+      background: #fff;
+      border-radius: 18px;
+      padding: 28px 35px 32px 35px;
+      box-shadow: 0 14px 36px #0050bc40;
+      max-width: 480px;
+      max-height: 75vh;
+      overflow-y: auto;
+      z-index: 2001;
+      transition: transform 0.3s, opacity 0.3s;
+      opacity: 0;
+    }
+    #tool-modal.active {
+      display: block;
+      opacity: 1;
+      transform: translate(-50%,-50%) scale(1);
+    }
+    #tool-modal h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-weight: 900;
+      font-size: 1.77rem;
+      color: #0050bc;
+      user-select: none;
+    }
+    body.dark #tool-modal {
+      background: #111827;
+      color: #00e0fc;
+      box-shadow: 0 14px 38px #00e0fc33;
+    }
+    body.dark #tool-modal h2 {
+      color: #00e0fc;
+    }
+    #tool-modal textarea,
+    #tool-modal input[type="text"] {
+      width: 100%; font-size: 1.1rem; padding: 9px 10px; border-radius: 9px; border: 2px solid #afd6ff;
+      color: #000; margin-bottom: 20px; background: #fff;
+    }
+    body.dark #tool-modal textarea,
+    body.dark #tool-modal input[type="text"] {
+      background: #1b1c22;
+      border-color: #00e0fc;
+      color: #00e0fc;
+    }
+    #tool-modal label {font-weight: 600; margin-bottom: 5px; color: #15446d; user-select:none;}
+    body.dark #tool-modal label { color: #00e0fc; }
+    #tool-modal button.close-btn {
+      position: absolute; top: 16px; right: 20px;
+      background: transparent; border: none; font-size: 2.3rem;
+      color: #0050bc; cursor: pointer; user-select: none;
+      transition: color 0.2s;
+    }
+    #tool-modal button.close-btn:hover { color: #00e0fc; }
+    /* Simple list styling */
+    #tool-modal ul {list-style: none; padding:0;}
+    #tool-modal li{padding: 8px 0;display: flex;justify-content: space-between;align-items: center;}
+    #tool-modal li button.remove-btn{background: none;border: none;color: #d7003a;cursor:pointer;font-size: 1rem;}
+
+    /* Scrollbar for modal lists */
+    #tool-modal ul::-webkit-scrollbar {width: 7px;}
+    #tool-modal ul::-webkit-scrollbar-thumb {background: #379bffaa;border-radius: 10px;}
+    #tool-modal ul::-webkit-scrollbar-track {background: #cce2ff23;}
+
+  </style>
 </head>
+
 <body>
+  <canvas id="grid-canvas"></canvas>
 
-<canvas id="bg-canvas"></canvas>
-
-<!-- Top right control buttons -->
-<div class="top-controls">
-  <button id="settings-btn" class="icon-btn" title="Settings" aria-label="Settings">⚙️</button>
-  <button id="darkmode-btn" class="icon-btn" title="Dark Mode" aria-label="Dark Mode">🌙</button>
-</div>
-
-<div class="main-content">
-  <div class="top-tools" aria-label="Productivity tools">
-    <button class="tool-btn" title="Habits" aria-label="Habits Tool">✅</button>
-    <button class="tool-btn" title="Planner" aria-label="Planner Tool">📝</button>
-    <button class="tool-btn" title="Project Manager" aria-label="Project Manager Tool">📊</button>
-    <button class="tool-btn" title="Notes" aria-label="Notes Tool">🗒️</button>
-    <button class="tool-btn" title="Goals Tracker" aria-label="Goals Tracker Tool">🎯</button>
-    <button class="tool-btn" title="Focus Timer" aria-label="Focus Timer Tool">⏰</button>
-    <button class="tool-btn" title="Distraction Blocker" aria-label="Distraction Blocker Tool">🚫</button>
+  <div id="sidebar" role="complementary">
+    <h1>Flowly</h1>
+    <div class="section-title">Tools</div>
+    <button class="tool-button" id="habits-btn" title="Habits">
+      <svg class="tool-logo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#00a649"/><path d="M7 13l3 3 5-7" stroke="#00e0fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Habits
+    </button>
+    <button class="tool-button" id="planner-btn" title="Planner">
+      <svg class="tool-logo" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="3" stroke="#faad38" fill="none"/><rect x="7" y="8" width="10" height="2" fill="#00e0fc"/><rect x="7" y="12" width="10" height="2" fill="#00e0fc"/></svg>
+      Planner
+    </button>
+    <button class="tool-button" id="project-btn" title="Project">
+     <svg class="tool-logo" viewBox="0 0 24 24"><rect x="3" y="11" width="7" height="7" stroke="#e146ac"/><rect x="14" y="3" width="7" height="7" stroke="#10f400"/><rect x="14" y="14" width="7" height="7" stroke="#00e0fc"/></svg>
+      Projects
+    </button>
+    <button class="tool-button" id="notes-btn" title="Notes">
+      <svg class="tool-logo" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" stroke="#eaa026"/><line x1="8" y1="8" x2="16" y2="8" stroke="#00e0fc" stroke-width="2"/><line x1="8" y1="12" x2="16" y2="12" stroke="#00e0fc" stroke-width="2"/></svg>
+      Notes
+    </button>
+    <button class="tool-button" id="goals-btn" title="Goals">
+      <svg class="tool-logo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="#ff0956"/><circle cx="12" cy="12" r="4" stroke="#00e0fc"/><circle cx="12" cy="12" r="1.5" fill="#00e0fc"/></svg>
+      Goals
+    </button>
+    <button class="tool-button" id="focus-btn" title="Focus">
+      <svg class="tool-logo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#00e0fc"/><path d="M12 6v6l4 2" stroke="#faad38" stroke-width="2"/></svg>
+      Focus
+    </button>
+    <button class="tool-button" id="block-btn" title="Block">
+      <svg class="tool-logo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#fa224a"/><line x1="8" y1="8" x2="16" y2="16" stroke="#00e0fc" stroke-width="2"/><line x1="16" y1="8" x2="8" y2="16" stroke="#00e0fc" stroke-width="2"/></svg>
+      Block
+    </button>
+    <div class="section-title">Settings</div>
+    <button class="tool-button" id="darkmode-btn" aria-pressed="false" title="Toggle Dark Mode">
+      <svg id="themeSVG" width="28" height="28" viewBox="0 0 32 32">
+        <circle cx="16" cy="16" r="10" stroke="#00e0fc" stroke-width="2" fill="none"/>
+        <path d="M20 17a6 6 0 1 1-4-10" stroke="#00e0fc" stroke-width="2" fill="none"/>
+        <circle cx="22" cy="16" r="2" fill="#00e0fc"/>
+      </svg>
+      <span id="modeLabel">Dark Mode</span>
+    </button>
   </div>
 
-  <div class="center-mark">Stay Productive! 🚀</div>
-  <div id="dateDisplay">Loading date...</div>
-  <div id="clock">--:--:--<span id="ampm"></span></div>
-  <div class="quote" id="dailyQuote">"Your inspiring quote will appear here."</div>
-</div>
+  <div id="music-player-fixed" role="region" aria-label="Music player controls">
+    <img id="fixed-music-cover" alt="Music Cover" src="">
+    <div class="music-info" id="fixed-music-info"></div>
+    <div class="music-buttons">
+      <button class="music-button" id="fixed-prev-song-btn">&#9194;</button>
+      <button class="music-button" id="fixed-play-pause-btn">&#9658;</button>
+      <button class="music-button" id="fixed-next-song-btn">&#9193;</button>
+    </div>
+  </div>
 
-<script>
-const canvas = document.getElementById('bg-canvas');
-const ctx = canvas.getContext('2d');
+  <div id="center-content">
+    <div id="clock-container">
+      <span id="clock"></span>
+      <span id="ampm"></span>
+    </div>
+    <div id="quote"></div>
+  </div>
 
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
+  <audio id="background-audio" loop></audio>
 
-const gridSize = 40;
-let mouseX = -1000;
-let mouseY = -1000;
-
-window.addEventListener('mousemove', e => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-});
-window.addEventListener('mouseleave', () => {
-  mouseX = -1000;
-  mouseY = -1000;
-});
-
-function getColors() {
-  if(document.body.classList.contains('darkmode')) {
-    return {bg: "#212833", grid: "rgba(180,191,220,ALPHA)", gridBlob: "rgba(90,153,255,ALPHA)"};
-  } else {
-    return {bg: "#eef2f3", grid: "rgba(42,69,120,ALPHA)", gridBlob: "rgba(90,153,255,ALPHA)"};
-  }
-}
-
-function drawGrid() {
-  const colors = getColors();
-  ctx.fillStyle = colors.bg;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  for(let y = 0; y < canvas.height; y += gridSize) {
-    for(let x = 0; x < canvas.width; x += gridSize) {
-      const centerX = x + gridSize / 2;
-      const centerY = y + gridSize / 2;
-      const dist = Math.hypot(mouseX - centerX, mouseY - centerY);
-
-      const maxRadius = 160;
-      let alpha = 0.15;
-      if (dist < maxRadius) {
-        alpha = 0.15 + (1 - dist / maxRadius) * 0.7;
-        ctx.strokeStyle = colors.gridBlob.replace('ALPHA', alpha);
-      } else {
-        ctx.strokeStyle = colors.grid.replace('ALPHA', alpha);
+  <div id="tool-modal-bg"></div>
+  <div id="tool-modal" role="dialog" aria-modal="true" tabindex="-1">
+    <button id="close-tool-modal" class="close-btn" aria-label="Close modal">×</button>
+    <div id="tool-modal-content"></div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // ===================== Grid background ========================
+      const gridCanvas = document.getElementById('grid-canvas');
+      const ctx = gridCanvas.getContext('2d');
+      function resizeGrid() {
+        gridCanvas.width = window.innerWidth;
+        gridCanvas.height = window.innerHeight;
       }
+      window.addEventListener('resize', resizeGrid);
+      resizeGrid();
 
-      ctx.lineWidth = 1.8;
-      ctx.strokeRect(x, y, gridSize, gridSize);
-    }
-  }
-}
+      let mouseX = -1000, mouseY = -1000;
+      window.addEventListener('mousemove', e => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+      });
+      window.addEventListener('mouseleave', () => {
+        mouseX = -1000; mouseY = -1000;
+      });
+      function drawGrid() {
+        ctx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
+        const isDark = document.body.classList.contains('dark');
+        // grid color
+        ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(26,29,34,0.17)';
+        ctx.lineWidth = 1;
+        const gap = 36;
+        for (let x = 0; x < gridCanvas.width; x += gap) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0); ctx.lineTo(x, gridCanvas.height);
+          ctx.stroke();
+        }
+        for (let y = 0; y < gridCanvas.height; y += gap) {
+          ctx.beginPath();
+          ctx.moveTo(0, y); ctx.lineTo(gridCanvas.width, y);
+          ctx.stroke();
+        }
+        // circle highlight
+        if (mouseX >= 0 && mouseY >= 0 && mouseX < gridCanvas.width && mouseY < gridCanvas.height) {
+          const radius = 80;
+          const gradient = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, radius);
+          if(isDark){
+            gradient.addColorStop(0, 'rgba(0,224,252,0.22)');
+            gradient.addColorStop(1, 'rgba(16,24,40,0)');
+          } else {
+            gradient.addColorStop(0, 'rgba(38,124,255,0.17)');
+            gradient.addColorStop(1, 'rgba(255,255,255,0)');
+          }
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(mouseX, mouseY, radius, 0, Math.PI*2);
+          ctx.fill();
+        }
+      }
+      function animate(){ drawGrid(); requestAnimationFrame(animate);}
+      animate();
 
-function animate() {
-  drawGrid();
-  requestAnimationFrame(animate);
-}
-animate();
+      // ===================== Central clock & quote =================
+      function updateClock() {
+        let now = new Date();
+        let hour = now.getHours();
+        let ampm = hour >= 12 ? "PM" : "AM";
+        hour = hour % 12 || 12;
+        let min = String(now.getMinutes()).padStart(2, '0');
+        let sec = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('clock').textContent = `${hour}:${min}:${sec}`;
+        document.getElementById('ampm').textContent = ampm;
+      }
+      setInterval(updateClock, 1000); updateClock();
+      const quotes = [ "The only limit to our realization of tomorrow is our doubts of today.",
+        "Believe you can and you're halfway there.",
+        "You don’t have to be great to start, but you have to start to be great.",
+        "What we think, we become.",
+        "Strive not to be a success, but rather to be of value.",
+        "Don’t watch the clock; do what it does. Keep going.",
+        "You haven’t failed until you quit trying."
+      ];
+      document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
 
-const darkBtn = document.getElementById('darkmode-btn');
+      // ========== Dark mode toggle ============
+      const darkBtn = document.getElementById('darkmode-btn');
+      function setDarkMode(dark) {
+        if (dark) document.body.classList.add('dark');
+        else document.body.classList.remove('dark');
+        darkBtn.setAttribute('aria-pressed', dark ? 'true':'false');
+        darkBtn.innerHTML = dark ?
+          `<svg id="themeSVG" width="28" height="28" viewBox="0 0 32 32">
+            <circle cx="16" cy="16" r="10" stroke="#00e0fc" stroke-width="2" fill="none"/>
+            <path d="M20 17a6 6 0 1 1-4-10" stroke="#00e0fc" stroke-width="2" fill="none"/>
+            <circle cx="22" cy="16" r="2" fill="#00e0fc"/>
+          </svg>
+            <span id="modeLabel">Dark Mode</span>`
+          : `<svg id="themeSVG" width="28" height="28" viewBox="0 0 32 32">
+            <circle cx="16" cy="16" r="10" stroke="#0050bc" stroke-width="2" fill="none"/>
+            <circle cx="16" cy="11" r="3.2" fill="#faad38"/>
+          </svg> <span id="modeLabel">Light Mode</span>`;
+      }
+      darkBtn.onclick = () => {
+        const dark = !document.body.classList.contains('dark');
+        setDarkMode(dark);
+        localStorage.setItem('darkmode', dark ? '1':'0');
+      };
+      setDarkMode(localStorage.getItem('darkmode') === '1');
 
-darkBtn.addEventListener('click', () => {
-  const isDark = document.body.classList.toggle('darkmode');
-  
-  // Rising animation
-  darkBtn.classList.add('rise');
-  setTimeout(() => darkBtn.classList.remove('rise'), 300);
+      // ========== Music player ================
+      const songs = [
+        {title: "Lofi Chill 1", url: "https://cdn.pixabay.com/audio/2023/02/24/audio_12c98d9c7b.mp3", cover: "https://cdn.pixabay.com/photo/2017/09/21/11/10/music-2776678_1280.jpg"},
+        {title: "Lofi Chill 2", url: "https://cdn.pixabay.com/audio/2022/03/24/audio_2b224477c6.mp3", cover: "https://cdn.pixabay.com/photo/2014/04/13/20/49/voodoo-323798_1280.jpg"},
+        {title: "Lofi Chill 3", url: "https://cdn.pixabay.com/audio/2023/01/10/audio_9e8e3c73e7.mp3", cover: "https://cdn.pixabay.com/photo/2015/05/14/23/10/girl-766355_1280.jpg"}
+      ];
+      let currentIndex = 0;
+      const audio = document.getElementById('background-audio');
+      const playBtn = document.getElementById('fixed-play-pause-btn');
+      const prevBtn = document.getElementById('fixed-prev-song-btn');
+      const nextBtn = document.getElementById('fixed-next-song-btn');
+      const musicInfo = document.getElementById('fixed-music-info');
+      const musicCover = document.getElementById('fixed-music-cover');
+      function loadMusic(index) {
+        const song = songs[index];
+        audio.src = song.url;
+        musicInfo.textContent = song.title;
+        musicCover.src = song.cover;
+      }
+      function updateMusicStatus() {
+        playBtn.textContent = audio.paused ? "►" : "❚❚";
+      }
+      playBtn.onclick = ()=> {
+        if(audio.paused) audio.play();
+        else audio.pause();
+        updateMusicStatus();
+      }
+      prevBtn.onclick = ()=> {
+        currentIndex = (currentIndex + songs.length - 1) % songs.length;
+        loadMusic(currentIndex);
+        audio.play();
+        updateMusicStatus();
+      }
+      nextBtn.onclick = ()=> {
+        currentIndex = (currentIndex + 1) % songs.length;
+        loadMusic(currentIndex);
+        audio.play();
+        updateMusicStatus();
+      }
+      audio.onplay = audio.onpause = updateMusicStatus;
+      audio.onended = ()=> nextBtn.click();
+      loadMusic(currentIndex);
 
-  darkBtn.textContent = isDark ? '☀️' : '🌙';
-});
-
-const dateDisplay = document.getElementById('dateDisplay');
-const clockDisplay = document.getElementById('clock');
-const ampmDisplay = document.getElementById('ampm');
-const quotes = [
-  "Don’t watch the clock; do what it does. Keep going.",
-  "Success is not the key to happiness. Happiness is the key to success.",
-  "Don’t wait for opportunity. Create it.",
-  "Small steps every day lead to big changes.",
-  "Your limitation—it’s only your imagination.",
-  "Push yourself, because no one else is going to do it for you.",
-  "Great things never come from comfort zones.",
-  "Dream it. Wish it. Do it.",
-  "Success doesn’t just find you. You have to go out and get it.",
-  "Stay positive, work hard, make it happen.",
-  "Wake up with determination. Go to bed with satisfaction.",
-  "The secret of getting ahead is getting started.",
-  "Failure is the condiment that gives success its flavor.",
-  "Don’t count the days, make the days count.",
-  "Every day is a new beginning.",
-  "Make each day count.",
-  "Work hard in silence, let your success be your noise.",
-  "The goal is not to be better than anyone else but to be better than you used to be.",
-  "Great things never come from comfort zones.",
-  "The key to success is to focus on goals, not obstacles."
-];
-
-document.getElementById('dailyQuote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
-
-function updateTime() {
-  const now = new Date();
-  dateDisplay.textContent = now.toLocaleDateString(undefined, {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'});
-
-  let hour = now.getHours();
-  let ampm = hour >= 12 ? 'PM' : 'AM';
-  hour %= 12;
-  hour = hour ? hour : 12;
-  let minute = now.getMinutes().toString().padStart(2, '0');
-  let second = now.getSeconds().toString().padStart(2, '0');
-
-  clockDisplay.textContent = `${hour}:${minute}:${second}`;
-  ampmDisplay.textContent = ampm;
-}
-
-updateTime();
-setInterval(updateTime, 1000);
-</script>
-
+      // ================ Modal logic ===============
+      function openModal(title, content) {
+        document.getElementById('tool-modal-content').innerHTML = `<h2>${title}</h2>` + content;
+        document.getElementById('tool-modal').classList.add('active');
+        document.getElementById('tool-modal-bg').classList.add('active');
+      }
+      function closeModal() {
+        document.getElementById('tool-modal').classList.remove('active');
+        document.getElementById('tool-modal-bg').classList.remove('active');
+      }
+      document.getElementById('close-tool-modal').onclick = closeModal;
+      document.getElementById('tool-modal-bg').onclick = closeModal;
+      // ============== Sidebar tools logic ==========
+      const habitsKey = "prodHub_habits";
+      const habitsList = ["Drink Water", "Exercise", "Read Books"];
+      document.getElementById('habits-btn').onclick = () => {
+        const saved = JSON.parse(localStorage.getItem(habitsKey) || "{}");
+        let html = '<ul>';
+        habitsList.forEach((habit,i) => {
+          html += `<li><label><input type="checkbox" data-idx="${i}" ${saved[i]?'checked':''}/> ${habit}</label></li>`;
+        });
+        html += '</ul>';
+        openModal("Habits", html);
+        document.querySelectorAll('#tool-modal input[type="checkbox"]').forEach(box => {
+          box.onchange = e => {
+            saved[e.target.getAttribute("data-idx")] = e.target.checked;
+            localStorage.setItem(habitsKey, JSON.stringify(saved));
+          };
+        });
+      };
+      document.getElementById('planner-btn').onclick = () => {
+        const key="prodHub_planner";
+        openModal("Planner", `<textarea style="width:100%;height:130px;">${localStorage.getItem(key)||""}</textarea>`);
+        const ta = document.querySelector('#tool-modal textarea');
+        ta.oninput = e => localStorage.setItem(key, ta.value);
+      };
+      document.getElementById('notes-btn').onclick = () => {
+        const key="prodHub_notes";
+        openModal("Notes", `<textarea style="width:100%;height:130px;">${localStorage.getItem(key)||""}</textarea>`);
+        const ta = document.querySelector('#tool-modal textarea');
+        ta.oninput = e => localStorage.setItem(key, ta.value);
+      };
+      document.getElementById('project-btn').onclick = () => {
+        openModal("Projects", "<p>Project tracking coming soon!</p>");
+      };
+      document.getElementById('goals-btn').onclick = () => {
+        openModal("Goals", "<p>Track your goals here!</p>");
+      };
+      // Focus timer
+      let timerInt = null, remain = 1500;
+      function formatTime(sec){
+        return `${Math.floor(sec/60).toString().padStart(2,'0')}:${(sec%60).toString().padStart(2,'0')}`;
+      }
+      document.getElementById('focus-btn').onclick = () => {
+        openModal("Focus Timer (Pomodoro)", `
+          <div id="focus-timer" style="font-size:2rem;font-weight:700;margin:14px 0">${formatTime(remain)}</div>
+          <button id="start-fc" style="width:49%;">Start</button>
+          <button id="pause-fc" style="width:49%;float:right">Pause</button>
+        `);
+        document.getElementById('start-fc').onclick = ()=>{
+          if(timerInt) return;
+          timerInt = setInterval(()=>{
+            remain--; document.getElementById('focus-timer').textContent = formatTime(remain);
+            if(remain<=0){ clearInterval(timerInt);timerInt=null;alert('Focus session complete!'); remain=1500; }
+          },1000);
+        };
+        document.getElementById('pause-fc').onclick = ()=>{
+          clearInterval(timerInt);timerInt=null;
+        };
+      };
+      // Block
+      const blockKey = "prodHub_blockedSites";
+      document.getElementById('block-btn').onclick = () => {
+        let sites = JSON.parse(localStorage.getItem(blockKey)||'[]');
+        function render(){
+          let html = `<input id="block-input" type="text" placeholder="add site" style="width:70%"/><button id="add-block" style="width:28%;">Add</button><ul>`;
+          html += sites.map((site,i)=>`<li>${site} <button class='remove-btn' data-i='${i}'>×</button></li>`).join('');
+          html += '</ul>';
+          openModal("Block Sites", html);
+          document.getElementById('add-block').onclick = () => {
+            const input = document.getElementById('block-input');
+            const val = input.value.trim();
+            if(val){ sites.push(val); localStorage.setItem(blockKey, JSON.stringify(sites)); render(); }
+          };
+          document.querySelectorAll('.remove-btn').forEach(btn=>{
+            btn.onclick = ()=>{
+              sites.splice(+btn.getAttribute('data-i'),1);localStorage.setItem(blockKey, JSON.stringify(sites)); render();
+            };
+          });
+        }
+        render();
+      };
+    });
+  </script>
 </body>
 </html>
